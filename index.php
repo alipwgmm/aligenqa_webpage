@@ -19,12 +19,10 @@ function lunchboxClose(lunchID) {
 //-->
 </SCRIPT>
 <?php
+// get requests - use links to tell php at which systems we want to look
+// general comment: for now this entire file is loosely typed, that should be fixed ...
 $div = $_GET['div'];
 $cat = $_GET['cat'];
-?>
-
-
-<?php
 $folder=$_GET['folder'];
 ?>
 
@@ -37,6 +35,7 @@ $folder=$_GET['folder'];
 <meta name="author" content="Redmer Alexander Bertens">
 
 
+<!-- cascading style sheet. should be moved to independent css file, but for now it's here -->
 <style type="text/css">
 
 .clasp {
@@ -150,7 +149,7 @@ img {
 <b>AliGenQA - QA page for Monte Carlo generators used in ALICE</b> 
 <hr>
 <div id="leftContainer">
-<a href="http://against-the-day.com" title="Click here to return to the main page">HOME</a> <br>
+<a href="http://aligenqa.web.cern.ch/aligenqa/" title="Click here to return to the main page">HOME</a> <br>
 <hr>
 Systems
 <ul>
@@ -166,54 +165,56 @@ Systems
 <?php
 $dirstring = $_GET['div'];
 $req = $_GET['req'];
-if($div!=NULL)
-{
+
+// let php process the get request
+if($div!=NULL) {
+    // for future scalability, check top level directory at this point
     $divplod = explode("/", $dirstring);
-    $dirstring = $divplod[0]."/";
-    if($divplod[1]=="..")
-    {
-        echo "Nothing to see here";
-    }
-    else{
+    $dirstring = "data/".$divplod[0]."/";
+    // avoid diretory traversing by explicitely catching paths . and .. here
+    if($divplod[0]==".." || $divplod[0]==".") echo "Nothing to see here ... ";
+    else {
+        // get directory handle
         if ($handle = opendir($dirstring)) {
-            while (false !== ($file = readdir($handle))) {
+            // read content from handle
+            while (($file = readdir($handle))) {
+                // again avoid traversing or viewing .htaccess 
                 if ($file != "." && $file != ".." && $file != ".htaccess") {
-                    //   echo "$file<br>";
-                    $files[]=$file;        
+                    // dont show raw root files
+                    $fileinfo = pathinfo($file);
+                    if ($fileinfo["extension"] == "root") continue;
+                    $files[]=$file;
                 }
             }
+            // close the directory handle
             closedir($handle);
         }
+        // sort alphabetically and count files
         sort($files);
-        $count=count($files)+1;
+        $count=count($files);
+        // later on probably we should use reg expr to make prettier
+        // folder names   
         $nodirstring = str_replace("_"," ",$divplod[0]);
-?>
-
-<?php 
-        if(($count-2)<1)
-        {
-            echo "No info on this system yet";
-        }
-        else
-        {
-    echo $count-2;?> items for system '<?php echo $nodirstring ?>', click on the name to open<br>
+        if($count == 0) echo "No info on this system yet";
+        else {
+            // if system is found, list contents
+            echo $count;?> items for system '<?php echo $nodirstring ?>', click on the name to open<br>
 <br>
 <?php
         }
-        for($i==0;$i<$count;$i++)
-        {
+        // loop over content of folder from a specific system
+        for($i=0; $i < $count+1; $i++) {
             $name = explode(".",$files[$i]);
             sort($name,SORT_STRING);    
             $noname = str_replace("_"," ",$name[0]);
 ?>
+<!-- make unique containers here and toggle open and close with the small javascript -->
     <div id="clasp_<?php echo $name[0];?>" class="clasp"><a href="javascript:lunchboxOpen('<?php echo $name[0];?>');"><?php echo $noname;
 ?></a></div>
     <div id="lunch_<?php echo $name[0];?>" class="lunchbox">
-
-
 <?php
             $folder = $dirstring.$files[$i]."/";
-
+            // pass folder name to external script which generates the contents of the pop up table
             $dirfile='dir_beta.php';
             $string = $folder.$dirfile;
             include('dir_beta.php');
