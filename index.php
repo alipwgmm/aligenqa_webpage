@@ -15,8 +15,13 @@ function lunchboxOpen(lunchID) {
 function lunchboxClose(lunchID) {
     document.getElementById('lunch_' + lunchID).style.display = "none";
     document.getElementById('clasp_' + lunchID).innerHTML="<a href=\"javascript:lunchboxOpen('" + lunchID + "');\">" + lunchID + "</a>";
+    
 }
-//-->
+function myFunction(text="empty file") {
+    //text= text.replace("&nbsp;", "'\n'");
+    alert(text);
+}
+
 </SCRIPT>
 <?php
 // get requests - use links to tell php at which systems we want to look
@@ -63,6 +68,7 @@ h1 {
     font-size:1.3em;
 }
 body {
+
     font-size:1.5em;
 text-align:
     center;
